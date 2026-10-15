@@ -1,0 +1,205 @@
+{
+  "version": 1792061592097,
+  "departments": [
+    {
+      "id": "d_civil",
+      "name": "قسم الهندسة المدنية"
+    },
+    {
+      "id": "d_elec",
+      "name": "قسم الهندسة الكهربائية"
+    },
+    {
+      "id": "d_mech",
+      "name": "قسم الهندسة الميكانيكية"
+    },
+    {
+      "id": "d_gen",
+      "name": "الأقسام العامة / علوم أساسية"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "s_civ_mat",
+      "name": "مقاومة المواد",
+      "deptId": "d_civil"
+    },
+    {
+      "id": "s_civ_struct",
+      "name": "تحليل الإنشاءات",
+      "deptId": "d_civil"
+    },
+    {
+      "id": "s_civ_conc",
+      "name": "الخرسانة المسلحة",
+      "deptId": "d_civil"
+    },
+    {
+      "id": "s_elec_net",
+      "name": "شبكات كهربائية",
+      "deptId": "d_elec"
+    },
+    {
+      "id": "s_elec_mach",
+      "name": "آلات كهربائية",
+      "deptId": "d_elec"
+    },
+    {
+      "id": "s_elec_power",
+      "name": "أنظمة قوى",
+      "deptId": "d_elec"
+    },
+    {
+      "id": "s_mech_thermo",
+      "name": "الديناميكا الحرارية",
+      "deptId": "d_mech"
+    },
+    {
+      "id": "s_mech_fluid",
+      "name": "ميكانيكا الموائع",
+      "deptId": "d_mech"
+    },
+    {
+      "id": "s_mech_des",
+      "name": "تصميم الآلات",
+      "deptId": "d_mech"
+    },
+    {
+      "id": "s_gen_math",
+      "name": "الرياضيات (1)",
+      "deptId": "d_gen"
+    },
+    {
+      "id": "s_gen_phys",
+      "name": "الفيزياء (1)",
+      "deptId": "d_gen"
+    },
+    {
+      "id": "s_gen_chem",
+      "name": "الكيمياء",
+      "deptId": "d_gen"
+    }
+  ],
+  "exams": [
+    {
+      "id": "e_0",
+      "title": "امتحان متوسط - مقاومة المواد",
+      "deptId": "d_civil",
+      "subjectId": "s_civ_mat",
+      "type": "Midterm",
+      "year": "2023",
+      "semester": "الفصل الأول",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_1",
+      "title": "امتحان نهائي - تحليل الإنشاءات",
+      "deptId": "d_civil",
+      "subjectId": "s_civ_struct",
+      "type": "Final",
+      "year": "2025",
+      "semester": "الفصل الثاني",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_2",
+      "title": "امتحان متوسط - الخرسانة المسلحة",
+      "deptId": "d_civil",
+      "subjectId": "s_civ_conc",
+      "type": "Midterm",
+      "year": "2024",
+      "semester": "الفصل الأول",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_3",
+      "title": "امتحان نهائي - شبكات كهربائية",
+      "deptId": "d_elec",
+      "subjectId": "s_elec_net",
+      "type": "Final",
+      "year": "2023",
+      "semester": "الفصل الثاني",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_4",
+      "title": "امتحان متوسط - آلات كهربائية",
+      "deptId": "d_elec",
+      "subjectId": "s_elec_mach",
+      "type": "Midterm",
+      "year": "2025",
+      "semester": "الفصل الأول",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_5",
+      "title": "امتحان نهائي - أنظمة قوى",
+      "deptId": "d_elec",
+      "subjectId": "s_elec_power",
+      "type": "Final",
+      "year": "2024",
+      "semester": "الفصل الثاني",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_6",
+      "title": "امتحان متوسط - الديناميكا الحرارية",
+      "deptId": "d_mech",
+      "subjectId": "s_mech_thermo",
+      "type": "Midterm",
+      "year": "2023",
+      "semester": "الفصل الأول",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_7",
+      "title": "امتحان نهائي - ميكانيكا الموائع",
+      "deptId": "d_mech",
+      "subjectId": "s_mech_fluid",
+      "type": "Final",
+      "year": "2025",
+      "semester": "الفصل الثاني",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_8",
+      "title": "امتحان متوسط - تصميم الآلات",
+      "deptId": "d_mech",
+      "subjectId": "s_mech_des",
+      "type": "Midterm",
+      "year": "2024",
+      "semester": "الفصل الأول",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_9",
+      "title": "امتحان نهائي - الرياضيات (1)",
+      "deptId": "d_gen",
+      "subjectId": "s_gen_math",
+      "type": "Final",
+      "year": "2023",
+      "semester": "الفصل الثاني",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_10",
+      "title": "امتحان متوسط - الفيزياء (1)",
+      "deptId": "d_gen",
+      "subjectId": "s_gen_phys",
+      "type": "Midterm",
+      "year": "2025",
+      "semester": "الفصل الأول",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+      "id": "e_11",
+      "title": "امتحان نهائي - الكيمياء",
+      "deptId": "d_gen",
+      "subjectId": "s_gen_chem",
+      "type": "Final",
+      "year": "2024",
+      "semester": "الفصل الثاني",
+      "pdfUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    }
+  ]
+}
