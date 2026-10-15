@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أرشيف امتحانات كلية الهندسة - جامعة الجفرة</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a5f',
+            primaryLight: '#2c5282',
+            accent: '#f59e0b',
+          },
+          fontFamily: {
+            sans: ['Tajawal', 'Cairo', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Arabic fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Tajawal', system-ui, sans-serif; }
+    .glass { backdrop-filter: blur(8px); }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .scale-in { animation: scaleIn 0.2s ease-out; }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    .dept-card { transition: transform .2s ease, box-shadow .2s ease; }
+    .dept-card:hover { transform: translateY(-2px); }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    .nav-active { background: rgba(30,58,95,0.12); }
+    .dark .nav-active { background: rgba(255,255,255,0.08); }
+    /* Exam row hover */
+    .exam-row { transition: background .15s ease; }
+    /* Toast */
+    #toast { transition: transform .3s ease, opacity .3s ease; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // DB config: replace values to enable Supabase (optional)
+    window.__DB = window.__DB || { url: "https://YOUR_PROJECT.supabase.co", key: "YOUR_ANON_KEY", adminEmail: "admin@example.com" };
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
+
+  <!-- ============ HEADER ============ -->
+  <header class="sticky top-0 z-40 glass bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <img src="logo.png" alt="شعار كلية الهندسة" class="w-11 h-11 rounded-xl object-contain shadow-md bg-white/80 dark:bg-slate-700 p-0.5" />
+        <div>
+          <h1 class="text-lg md:text-xl font-bold text-slate-800 dark:text-white leading-tight">أرشيف امتحانات كلية الهندسة</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">جامعة الجفرة</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="themeToggle" class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition" title="تبديل الوضع">
+          <i class="fas fa-moon dark:hidden"></i>
+          <i class="fas fa-sun hidden dark:inline"></i>
+        </button>
+        <a id="adminLink" href="admin.html" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-2 py-1 transition opacity-60 hover:opacity-100" title="لوحة التحكم">
+          <i class="fas fa-cog"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ STUDENT VIEW ============ -->
+  <main id="studentView" class="max-w-7xl mx-auto px-4">
+    <!-- Hero + Search -->
+    <section class="mt-6">
+      <div class="bg-gradient-to-r from-blue-800 to-indigo-700 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 md:p-10 text-white shadow-lg relative overflow-hidden">
+        <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full"></div>
+        <div class="absolute -bottom-12 -right-8 w-48 h-48 bg-white/10 rounded-full"></div>
+        <div class="relative">
+          <h2 class="text-2xl md:text-3xl font-bold">مرحباً بك في أرشيف الامتحانات</h2>
+          <p class="mt-2 text-blue-100 max-w-2xl">استعرض الامتحانات السابقة حسب القسم والمادة، واعرض الورقة قبل تحميلها. جميع الملفات منظمة لسهولة الوصول أثناء المراجعة.</p>
+          <div class="mt-5 relative">
+            <input id="searchInput" type="text" placeholder="ابحث عن مادة، قسم، نوع امتحان، أو سنة..."
+              class="w-full rounded-xl py-3 pr-12 pl-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow" />
+            <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-2xl font-bold text-primary dark:text-blue-300" id="statDepts">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">الأقسام</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-2xl font-bold text-primary dark:text-blue-300" id="statSubjects">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">المواد</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-2xl font-bold text-primary dark:text-blue-300" id="statExams">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">الامتحانات</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 text-center">
+        <div class="text-2xl font-bold text-amber-500" id="statFinals">0</div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">نهائيات</div>
+      </div>
+    </section>
+
+    <!-- Departments / content -->
+    <section id="studentContent" class="mt-6 pb-8 space-y-4"></section>
+  </main>
+
+  <!-- ============ ADMIN VIEW ============ -->
+  <section id="adminView" class="hidden max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-white">لوحة التحكم</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">مرحباً جهاد — قم بإدارة الأقسام والمواد والامتحانات</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="adminBack" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-sm transition">
+          <i class="fas fa-arrow-right ml-1"></i> العودة للموقع
+        </button>
+        <button id="adminLogout" class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm transition">
+          <i class="fas fa-sign-out-alt ml-1"></i> تسجيل خروج
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex flex-wrap gap-2 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
+      <button data-tab="depts" class="tabBtn px-4 py-2 rounded-lg text-sm font-medium transition nav-active">الأقسام</button>
+      <button data-tab="subjects" class="tabBtn px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-slate-800">المواد</button>
+      <button data-tab="exams" class="tabBtn px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-slate-800">الامتحانات</button>
+      <button data-tab="settings" class="tabBtn px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-slate-800">الإعدادات</button>
+    </div>
+
+    <div id="adminContent" class="fade-in"></div>
+  </section>
+
+  <!-- ============ MODAL OVERLAY (generic) ============ -->
+  <div id="modalOverlay" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto scale-in">
+      <button id="modalClose" class="absolute top-3 left-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+        <i class="fas fa-times"></i>
+      </button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ PDF PREVIEW MODAL ============ -->
+  <div id="pdfModal" class="fixed inset-0 bg-black/70 z-[60] hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl scale-in">
+      <div class="flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-700">
+        <h3 id="pdfTitle" class="font-bold text-slate-800 dark:text-white truncate">معاينة الامتحان</h3>
+        <div class="flex items-center gap-2">
+          <a id="pdfOpenNew" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm transition">
+            <i class="fas fa-external-link-alt ml-1"></i> فتح
+          </a>
+          <a id="pdfDownload" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition" download>
+            <i class="fas fa-download ml-1"></i> تحميل
+          </a>
+          <button id="pdfClose" class="px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm transition">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <iframe id="pdfFrame" class="flex-1 w-full bg-slate-100 dark:bg-slate-900" src="about:blank"></iframe>
+      <div id="pdfFallback" class="hidden p-4 text-center text-sm text-slate-500">
+        إذا لم يظهر الملف، <a id="pdfFallbackLink" target="_blank" class="text-blue-600 underline">افتحه في نافذة جديدة</a>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="max-w-7xl mx-auto px-4 py-8 mt-4 border-t border-slate-200 dark:border-slate-700 text-center text-sm text-slate-500 dark:text-slate-400">
+    <p class="font-medium">إعداد الطالب: جهاد سالم احمد</p>
+    <p class="mt-1 text-xs">أرشيف امتحانات كلية الهندسة - جامعة الجفرة © 2026</p>
+    <a id="adminFooterLink" href="admin.html" class="mt-2 text-xs opacity-40 hover:opacity-80 transition inline-block">لوحة التحكم</a>
+  </footer>
+
+  <!-- ============ FLOATING SOCIAL BAR ============ -->
+  <div class="fixed bottom-4 right-4 z-40 flex flex-col gap-3">
+    <a href="https://wa.me/218943769102" target="_blank" rel="noopener"
+       class="w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-lg hover:scale-110 transition" title="واتساب">
+      <i class="fab fa-whatsapp text-2xl"></i>
+    </a>
+    <a href="https://www.facebook.com/share/1DotxjdLmk/?mibextid=wwXIfr" target="_blank" rel="noopener"
+       class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg hover:scale-110 transition" title="فيسبوك">
+      <i class="fab fa-facebook-f text-xl"></i>
+    </a>
+  </div>
+
+  <!-- ============ TOAST ============ -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[70] opacity-0 pointer-events-none transform -translate-y-4 px-4 py-3 rounded-xl shadow-lg text-sm text-white bg-slate-800 transition-all"></div>
+
+  <script>
+    /* =====================================================
+       STATE & STORAGE
+       ===================================================== */
+    const STORAGE_KEYS = {
+      depts: 'qbank_depts',
+      subjects: 'qbank_subjects',
+      exams: 'qbank_exams',
+      password: 'qbank_admin_password',
+      theme: 'qbank_theme',
+      session: 'qbank_admin_session',
+    };
+    const DEFAULT_PASSWORD = 'admin123';
+
+    function uid() { return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+
+    function loadJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw === null) return fallback;
+        return JSON.parse(raw);
+      } catch (e) {
+        console.warn('load error', key, e);
+        return fallback;
+      }
+    }
+    function saveJSON(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    /* ---------- Seed data ---------- */
+    function seedDepartments() {
+      return [
+        { id: 'd_civil', name: 'قسم الهندسة المدنية' },
+        { id: 'd_elec', name: 'قسم الهندسة الكهربائية' },
+        { id: 'd_mech', name: 'قسم الهندسة الميكانيكية' },
+        { id: 'd_gen', name: 'الأقسام العامة / علوم أساسية' },
+      ];
+    }
+    function seedSubjects() {
+      return [
+        { id: 's_civ_mat', name: 'مقاومة المواد', deptId: 'd_civil' },
+        { id: 's_civ_struct', name: 'تحليل الإنشاءات', deptId: 'd_civil' },
+        { id: 's_civ_conc', name: 'الخرسانة المسلحة', deptId: 'd_civil' },
+        { id: 's_elec_net', name: 'شبكات كهربائية', deptId: 'd_elec' },
+        { id: 's_elec_mach', name: 'آلات كهربائية', deptId: 'd_elec' },
+        { id: 's_elec_power', name: 'أنظمة قوى', deptId: 'd_elec' },
+        { id: 's_mech_thermo', name: 'الديناميكا الحرارية', deptId: 'd_mech' },
+        { id: 's_mech_fluid', name: 'ميكانيكا الموائع', deptId: 'd_mech' },
+        { id: 's_mech_des', name: 'تصميم الآلات', deptId: 'd_mech' },
+        { id: 's_gen_math', name: 'الرياضيات (1)', deptId: 'd_gen' },
+        { id: 's_gen_phys', name: 'الفيزياء (1)', deptId: 'd_gen' },
+        { id: 's_gen_chem', name: 'الكيمياء', deptId: 'd_gen' },
+      ];
+    }
+    // A small public PDF used for preview demo
+    const DEMO_PDF = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+    function seedExams() {
+      const types = ['Midterm', 'Final', 'Quiz'];
+      const years = ['2024', '2023', '2025'];
+      const out = [];
+      let i = 0;
+      subjects.forEach((s) => {
+        out.push({
+          id: 'e_' + i++,
+
+          title: 'امتحان ' + (i % 2 === 0 ? 'نهائي' : 'متوسط') + ' - ' + s.name,
+          deptId: s.deptId,
+          subjectId: s.id,
+          type: i % 2 === 0 ? 'Final' : 'Midterm',
+          year: years[i % years.length],
+          semester: i % 2 === 0 ? 'الفصل الثاني' : 'الفصل الأول',
+          pdfUrl: DEMO_PDF,
+        });
+      });
+      return out;
+    }
+
+    // State (sync ط¨ط§ظ‡ qbank-data.json)
+    function fetchCentral(){try{const x=new XMLHttpRequest();x.open('GET','qbank-data.json',false);x.send(null);if(x.status===200||x.status===0){return JSON.parse(x.responseText);} }catch(e){}return null;}
+    const __central = fetchCentral();
+    let departments, subjects, exams;
+    const __sync = localStorage.getItem('qbank_sync');
+    if (__central && __central.version && __central.version !== __sync) {
+      departments = __central.departments; subjects = __central.subjects; exams = __central.exams;
+      saveJSON(STORAGE_KEYS.depts, departments); saveJSON(STORAGE_KEYS.subjects, subjects); saveJSON(STORAGE_KEYS.exams, exams);
+      localStorage.setItem('qbank_sync', String(__central.version));
+    } else {
+      departments = loadJSON(STORAGE_KEYS.depts, __central ? __central.departments : null);
+      subjects = loadJSON(STORAGE_KEYS.subjects, __central ? __central.subjects : null);
+      exams = loadJSON(STORAGE_KEYS.exams, __central ? __central.exams : null);
+      if (!departments) { departments = seedDepartments(); saveJSON(STORAGE_KEYS.depts, departments); }
+      if (!subjects) { subjects = seedSubjects(); saveJSON(STORAGE_KEYS.subjects, subjects); }
+      if (!exams) { exams = seedExams(); saveJSON(STORAGE_KEYS.exams, exams); }
+    }
+
+    async function saveAll() {
+      saveJSON(STORAGE_KEYS.depts, departments);
+      saveJSON(STORAGE_KEYS.subjects, subjects);
+      saveJSON(STORAGE_KEYS.exams, exams);
+      if (window.__sb) {
+        try { await window.__sb.from('qbank_data').upsert({ id:1, payload:{ departments, subjects, exams } }).eq('id',1); } catch(e){ console.warn('Supabase save failed',e); }
+      }
+    }
+
+    /* ---------- Admin auth ---------- */
+    function getPassword() { return localStorage.getItem(STORAGE_KEYS.password) || DEFAULT_PASSWORD; }
+    function isLoggedIn() { return localStorage.getItem(STORAGE_KEYS.session) === '1'; }
+    async function login(emailOrPw, pw) {
+      if (window.__sb) {
+        try {
+          const {data,error} = await window.__sb.auth.signInWithPassword({ email: emailOrPw, password: pw });
+          if (error) { return false; }
+          localStorage.setItem(STORAGE_KEYS.session,'1');
+          return true;
+        } catch(e){ return false; }
+      }
+      if (pw === getPassword()) { localStorage.setItem(STORAGE_KEYS.session,'1'); return true; }
+      return false;
+    }
+    function logout() {
+      localStorage.removeItem(STORAGE_KEYS.session);
+    }
+
+    /* ---------- Theme ---------- */
+    function applyTheme() {
+      const t = localStorage.getItem(STORAGE_KEYS.theme) || 'light';
+      document.documentElement.classList.toggle('dark', t === 'dark');
+    }
+    applyTheme();
+
+    /* =====================================================
+       UTILITIES
+       ===================================================== */
+    function toast(msg, type = 'info') {
+      const el = document.getElementById('toast');
+      const colors = { info: 'bg-slate-800', success: 'bg-emerald-600', error: 'bg-red-600', warn: 'bg-amber-600' };
+      el.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[70] px-4 py-3 rounded-xl shadow-lg text-sm text-white transition-all ' + (colors[type] || colors.info);
+      el.textContent = msg;
+      el.style.opacity = '1';
+      el.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-50%) translateY(-12px)';
+      }, 2800);
+    }
+
+    function openModal(html) {
+      const overlay = document.getElementById('modalOverlay');
+      document.getElementById('modalBody').innerHTML = html;
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+    }
+    function closeModal() {
+      const overlay = document.getElementById('modalOverlay');
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+    }
+
+    function deptName(id) { const d = departments.find(x => x.id === id); return d ? d.name : '—'; }
+    function subjectName(id) { const s = subjects.find(x => x.id === id); return s ? s.name : '—'; }
+
+    /* =====================================================
+       STUDENT VIEW RENDER
+       ===================================================== */
+    function typeLabel(t) {
+      const map = { Midterm: 'متوسط', Final: 'نهائي', Quiz: 'اختبار قصير', Oral: 'شفهي' };
+      return map[t] || t;
+    }
+    function typeBadge(t) {
+      const color = t === 'Final' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+        : t === 'Midterm' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
+      return `<span class="text-xs px-2 py-0.5 rounded-full ${color} font-medium">${typeLabel(t)}</span>`;
+    }
+
+    let openDepts = new Set();
+
+    function renderStudent() {
+      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+      const root = document.getElementById('studentContent');
+      let html = '';
+
+      const sortedDepts = [...departments].sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+      sortedDepts.forEach(dept => {
+        const deptSubjects = subjects.filter(s => s.deptId === dept.id);
+        // filter exams per subject
+        const subjectBlocks = [];
+        deptSubjects.forEach(subj => {
+          const allExams = exams.filter(e => e.subjectId === subj.id);
+          const visibleExams = allExams.filter(e => {
+            if (!q) return true;
+            if (dept.name.toLowerCase().includes(q)) return true;
+            if (subj.name.toLowerCase().includes(q)) return true;
+            if ((e.title || '').toLowerCase().includes(q)) return true;
+            if ((e.type || '').toLowerCase().includes(q)) return true;
+            if ((e.year || '').includes(q)) return true;
+            if ((e.semester || '').toLowerCase().includes(q)) return true;
+            return false;
+          });
+
+          const subjectMatches = !q || subj.name.toLowerCase().includes(q) || visibleExams.length > 0 || dept.name.toLowerCase().includes(q);
+          if (!subjectMatches) return;
+
+          const isDeptOpen = q ? true : openDepts.has(dept.id);
+          const examsHtml = visibleExams.length
+            ? visibleExams.map(e => `
+                <div class="exam-row flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-4 py-3 border-t border-slate-100 dark:border-slate-700">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-500 flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="font-medium text-slate-800 dark:text-slate-100 truncate">${escapeHtml(e.title)}</p>
+                      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex flex-wrap gap-2">
+                        ${typeBadge(e.type)} <span>• ${escapeHtml(e.year || '—')}</span> <span>• ${escapeHtml(e.semester || '—')}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 md:justify-end">
+                    <button data-action="preview" data-id="${e.id}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm transition">
+                      <i class="fas fa-eye ml-1"></i> معاينة
+                    </button>
+                    <a href="${escapeAttr(e.pdfUrl)}" target="_blank" download class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition">
+                      <i class="fas fa-download ml-1"></i> تحميل
+                    </a>
+                  </div>
+                </div>`).join('')
+            : `<div class="px-4 py-3 text-sm text-slate-400 border-t border-slate-100 dark:border-slate-700">لا توجد امتحانات مطابقة.</div>`;
+
+          subjectBlocks.push(`
+            <div class="border-t border-slate-100 dark:border-slate-700">
+              <button data-action="toggle-subject" data-id="${subj.id}" class="w-full text-right px-4 py-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+                <span class="font-medium text-slate-700 dark:text-slate-200"><i class="fas fa-book-open ml-2 text-blue-500"></i>${escapeHtml(subj.name)}</span>
+                <span class="text-xs text-slate-400">${allExams.length} امتحان</span>
+              </button>
+              <div id="subj-${subj.id}" class="${visibleExams.length ? '' : 'hidden'}">
+                ${examsHtml}
+              </div>
+            </div>`);
+        });
+
+        const deptHasVisible = subjectBlocks.length > 0 || (q && dept.name.toLowerCase().includes(q));
+        if (!deptHasVisible) return;
+
+        // if dept name matches, include all subjects (already filtered)
+        const countExams = exams.filter(e => deptSubjects.some(s => s.id === e.subjectId)).length;
+        const expanded = q ? true : openDepts.has(dept.id);
+
+        html += `
+          <div class="dept-card bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden fade-in">
+            <button data-action="toggle-dept" data-id="${dept.id}" class="w-full text-right px-5 py-4 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-500 text-white flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-building"></i>
+                </div>
+                <div class="min-w-0 text-right">
+                  <h3 class="font-bold text-slate-800 dark:text-white">${escapeHtml(dept.name)}</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">${deptSubjects.length} مادة • ${countExams} امتحان</p>
+                </div>
+              </div>
+              <i class="fas fa-chevron-down transition-transform ${expanded ? 'rotate-180' : ''}"></i>
+            </button>
+            <div id="dept-${dept.id}" class="${expanded ? '' : 'hidden'}">
+              ${subjectBlocks.length ? subjectBlocks.join('') : `<div class="px-5 py-4 text-sm text-slate-400">لا توجد مواد في هذا القسم.</div>`}
+            </div>
+          </div>`;
+      });
+
+      if (!html) {
+        html = `<div class="text-center py-16 text-slate-400">
+          <i class="fas fa-search text-4xl mb-3"></i>
+          <p>لا توجد نتائج مطابقة للبحث.</p>
+        </div>`;
+      }
+      root.innerHTML = html;
+
+      // attach student listeners
+      root.querySelectorAll('[data-action="toggle-dept"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          if (openDepts.has(id)) openDepts.delete(id); else openDepts.add(id);
+          // toggle visibility of child
+          const panel = document.getElementById('dept-' + id);
+          const icon = btn.querySelector('.fa-chevron-down');
+          if (panel.classList.contains('hidden')) { panel.classList.remove('hidden'); icon.classList.add('rotate-180'); }
+          else { panel.classList.add('hidden'); icon.classList.remove('rotate-180'); }
+        });
+      });
+      root.querySelectorAll('[data-action="preview"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const exam = exams.find(e => e.id === btn.dataset.id);
+          if (exam) openPdf(exam);
+        });
+      });
+
+      updateStats();
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+    function updateStats() {
+      document.getElementById('statDepts').textContent = departments.length;
+      document.getElementById('statSubjects').textContent = subjects.length;
+      document.getElementById('statExams').textContent = exams.length;
+      document.getElementById('statFinals').textContent = exams.filter(e => e.type === 'Final').length;
+    }
+
+    function openPdf(exam) {
+      const modal = document.getElementById('pdfModal');
+      document.getElementById('pdfTitle').textContent = exam.title;
+      const frame = document.getElementById('pdfFrame');
+      frame.src = exam.pdfUrl || 'about:blank';
+      const openNew = document.getElementById('pdfOpenNew');
+      const dl = document.getElementById('pdfDownload');
+      openNew.href = exam.pdfUrl || '#';
+      dl.href = exam.pdfUrl || '#';
+      dl.download = (exam.title || 'exam') + '.pdf';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closePdf() {
+      const modal = document.getElementById('pdfModal');
+      document.getElementById('pdfFrame').src = 'about:blank';
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    /* =====================================================
+       ADMIN RENDER
+       ===================================================== */
+    let currentTab = 'depts';
+
+    function renderAdmin() {
+      const container = document.getElementById('adminContent');
+      if (currentTab === 'depts') renderDeptsTab(container);
+      else if (currentTab === 'subjects') renderSubjectsTab(container);
+      else if (currentTab === 'exams') renderExamsTab(container);
+      else if (currentTab === 'settings') renderSettingsTab(container);
+    }
+
+    function adminCard(title, desc, btnLabel, btnAction) {
+      return '';
+    }
+
+    function renderDeptsTab(container) {
+      const rows = departments.map(d => {
+        const sc = subjects.filter(s => s.deptId === d.id).length;
+        const ec = exams.filter(e => e.deptId === d.id).length;
+        return `
+          <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 flex items-center justify-between gap-3 fade-in">
+            <div class="min-w-0">
+              <h4 class="font-bold text-slate-800 dark:text-white">${escapeHtml(d.name)}</h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${sc} مادة • ${ec} امتحان</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <button data-edit-dept="${d.id}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm transition"><i class="fas fa-edit"></i></button>
+              <button data-del-dept="${d.id}" class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 text-sm transition"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>`;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h3 class="text-lg font-bold">الأقسام الهندسية</h3>
+          <button id="addDeptBtn" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition shadow">
+            <i class="fas fa-plus ml-1"></i> إضافة قسم
+          </button>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+          ${rows || '<div class="text-slate-400 text-sm col-span-2 text-center py-8">لا توجد أقسام.</div>'}
+        </div>`;
+      document.getElementById('addDeptBtn').onclick = () => openDeptModal();
+      container.querySelectorAll('[data-edit-dept]').forEach(b => b.onclick = () => openDeptModal(b.dataset.editDept));
+      container.querySelectorAll('[data-del-dept]').forEach(b => b.onclick = () => deleteDepartment(b.dataset.delDept));
+    }
+
+    function renderSubjectsTab(container) {
+      const rows = subjects.map(s => `
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 flex items-center justify-between gap-3 fade-in">
+          <div class="min-w-0">
+            <h4 class="font-bold text-slate-800 dark:text-white">${escapeHtml(s.name)}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${escapeHtml(deptName(s.deptId))}</p>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button data-edit-subject="${s.id}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm transition"><i class="fas fa-edit"></i></button>
+            <button data-del-subject="${s.id}" class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 text-sm transition"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`).join('');
+
+      const deptOptions = departments.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h3 class="text-lg font-bold">المواد الدراسية</h3>
+          <button id="addSubjectBtn" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition shadow">
+            <i class="fas fa-plus ml-1"></i> إضافة مادة
+          </button>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+          ${rows || '<div class="text-slate-400 text-sm col-span-2 text-center py-8">لا توجد مواد.</div>'}
+        </div>`;
+      document.getElementById('addSubjectBtn').onclick = () => openSubjectModal();
+      container.querySelectorAll('[data-edit-subject]').forEach(b => b.onclick = () => openSubjectModal(b.dataset.editSubject));
+      container.querySelectorAll('[data-del-subject]').forEach(b => b.onclick = () => deleteSubject(b.dataset.delSubject));
+    }
+
+    function renderExamsTab(container) {
+      const rows = exams.map(e => `
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3 fade-in">
+          <div class="min-w-0">
+            <h4 class="font-bold text-slate-800 dark:text-white">${escapeHtml(e.title)}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap gap-2">
+              ${escapeHtml(deptName(e.deptId))} • ${escapeHtml(subjectName(e.subjectId))} • ${typeLabel(e.type)} • ${escapeHtml(e.year || '—')} • ${escapeHtml(e.semester || '—')}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button data-preview-exam="${e.id}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm transition"><i class="fas fa-eye"></i></button>
+            <button data-edit-exam="${e.id}" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm transition"><i class="fas fa-edit"></i></button>
+            <button data-del-exam="${e.id}" class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 text-sm transition"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`).join('');
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h3 class="text-lg font-bold">الامتحانات (بنك الأسئلة)</h3>
+          <button id="addExamBtn" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition shadow">
+            <i class="fas fa-plus ml-1"></i> إضافة امتحان
+          </button>
+        </div>
+        <div class="space-y-3">
+          ${rows || '<div class="text-slate-400 text-sm text-center py-8">لا توجد امتحانات.</div>'}
+        </div>`;
+      document.getElementById('addExamBtn').onclick = () => openExamModal();
+      container.querySelectorAll('[data-preview-exam]').forEach(b => b.onclick = () => { const e = exams.find(x=>x.id===b.dataset.previewExam); if(e) openPdf(e); });
+      container.querySelectorAll('[data-edit-exam]').forEach(b => b.onclick = () => openExamModal(b.dataset.editExam));
+      container.querySelectorAll('[data-del-exam]').forEach(b => b.onclick = () => deleteExam(b.dataset.delExam));
+    }
+
+    function renderSettingsTab(container) {
+      container.innerHTML = `
+        <div class="max-w-md space-y-4">
+          <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-100 dark:border-slate-700">
+            <h3 class="font-bold text-slate-800 dark:text-white mb-3">تغيير كلمة المرور</h3>
+            <form id="pwdForm" class="space-y-3">
+              <div>
+                <label class="text-sm text-slate-600 dark:text-slate-300">كلمة المرور الحالية</label>
+                <input id="pwdOld" type="password" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label class="text-sm text-slate-600 dark:text-slate-300">كلمة المرور الجديدة</label>
+                <input id="pwdNew" type="password" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label class="text-sm text-slate-600 dark:text-slate-300">تأكيد كلمة المرور</label>
+                <input id="pwdConfirm" type="password" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition">
+                حفظ التغييرات
+              </button>
+            </form>
+          </div>
+
+          <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-100 dark:border-slate-700">
+            <h3 class="font-bold text-slate-800 dark:text-white mb-2">بيانات التخزين</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">جميع البيانات محفوظة محلياً في متصفحك (localStorage).</p>
+            <button id="exportDataBtn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm transition mr-2">Export qbank-data.json</button>
+<button id="resetDataBtn" class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm transition">
+              <i class="fas fa-rotate-left ml-1"></i> إعادة تعيين البيانات (استعادة الإفتراضية)
+            </button>
+          </div>
+        </div>`;
+
+      document.getElementById('pwdForm').onsubmit = (ev) => {
+        ev.preventDefault();
+        const oldP = document.getElementById('pwdOld').value;
+        const newP = document.getElementById('pwdNew').value;
+        const conf = document.getElementById('pwdConfirm').value;
+        if (oldP !== getPassword()) { toast('كلمة المرور الحالية غير صحيحة', 'error'); return; }
+        if (!newP || newP.length < 4) { toast('كلمة المرور قصيرة (4 أحرف على الأقل)', 'warn'); return; }
+        if (newP !== conf) { toast('تأكيد كلمة المرور غير مطابق', 'error'); return; }
+        localStorage.setItem(STORAGE_KEYS.password, newP);
+        toast('تم تغيير كلمة المرور بنجاح', 'success');
+        document.getElementById('pwdForm').reset();
+      };
+
+      document.getElementById('exportDataBtn').onclick = () => {
+  const payload = { version: Date.now(), departments: departments, subjects: subjects, exams: exams };
+  const blob = new Blob([JSON.stringify(payload,null,2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'qbank-data.json'; a.click(); URL.revokeObjectURL(url);
+  toast('Exported qbank-data.json', 'success');
+};document.getElementById('resetDataBtn').onclick = () => {
+        if (!confirm('سيتم حذف جميع الإضافات وإعادة البيانات الافتراضية. متابعة؟')) return;
+        localStorage.removeItem(STORAGE_KEYS.depts);
+        localStorage.removeItem(STORAGE_KEYS.subjects);
+        localStorage.removeItem(STORAGE_KEYS.exams);
+        location.reload();
+      };
+    }
+
+    /* ---------- CRUD functions ---------- */
+    function openDeptModal(id = null) {
+      const dept = id ? departments.find(d => d.id === id) : null;
+      openModal(`
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4">${dept ? 'تعديل قسم' : 'إضافة قسم جديد'}</h3>
+        <form id="deptForm" class="space-y-3">
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">اسم القسم</label>
+            <input id="deptName" type="text" required value="${escapeAttr(dept ? dept.name : '')}"
+              class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="مثال: قسم الهندسة المدنية" />
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm">إلغاء</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">${dept ? 'حفظ' : 'إضافة'}</button>
+          </div>
+        </form>`);
+      document.getElementById('deptForm').onsubmit = (ev) => {
+        ev.preventDefault();
+        const name = document.getElementById('deptName').value.trim();
+        if (!name) return;
+        if (dept) {
+          dept.name = name;
+          toast('تم تعديل القسم', 'success');
+        } else {
+          departments.push({ id: uid(), name });
+          toast('تم إضافة القسم', 'success');
+        }
+        saveAll(); closeModal(); renderAdmin(); renderStudent();
+      };
+    }
+
+    function deleteDepartment(id) {
+      const d = departments.find(x => x.id === id);
+      const sc = subjects.filter(s => s.deptId === id).length;
+      const ec = exams.filter(e => e.deptId === id).length;
+      if (!confirm(`حذف القسم "${d?.name}" سيؤدي لحذف ${sc} مادة و ${ec} امتحان. متابعة؟`)) return;
+      departments = departments.filter(x => x.id !== id);
+      subjects = subjects.filter(s => s.deptId !== id);
+      exams = exams.filter(e => e.deptId !== id);
+      openDepts.delete(id);
+      saveAll(); renderAdmin(); renderStudent(); toast('تم حذف القسم', 'success');
+    }
+
+    function openSubjectModal(id = null) {
+      const subj = id ? subjects.find(s => s.id === id) : null;
+      const deptOptions = departments.map(d => `<option value="${d.id}" ${subj && subj.deptId === d.id ? 'selected' : ''}>${escapeHtml(d.name)}</option>`).join('');
+      openModal(`
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4">${subj ? 'تعديل مادة' : 'إضافة مادة جديدة'}</h3>
+        <form id="subjectForm" class="space-y-3">
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">اسم المادة</label>
+            <input id="subjectName" type="text" required value="${escapeAttr(subj ? subj.name : '')}"
+              class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="مثال: مقاومة المواد" />
+          </div>
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">القسم</label>
+            <select id="subjectDept" required class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              ${deptOptions}
+            </select>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm">إلغاء</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">${subj ? 'حفظ' : 'إضافة'}</button>
+          </div>
+        </form>`);
+      document.getElementById('subjectForm').onsubmit = (ev) => {
+        ev.preventDefault();
+        const name = document.getElementById('subjectName').value.trim();
+        const deptId = document.getElementById('subjectDept').value;
+        if (!name || !deptId) return;
+        if (subj) {
+          subj.name = name; subj.deptId = deptId;
+          toast('تم تعديل المادة', 'success');
+        } else {
+          subjects.push({ id: uid(), name, deptId });
+          toast('تم إضافة المادة', 'success');
+        }
+        saveAll(); closeModal(); renderAdmin(); renderStudent();
+      };
+    }
+
+    function deleteSubject(id) {
+      const s = subjects.find(x => x.id === id);
+      const ec = exams.filter(e => e.subjectId === id).length;
+      if (!confirm(`حذف المادة "${s?.name}" سيؤدي لحذف ${ec} امتحان. متابعة؟`)) return;
+      subjects = subjects.filter(x => x.id !== id);
+      exams = exams.filter(e => e.subjectId !== id);
+      saveAll(); renderAdmin(); renderStudent(); toast('تم حذف المادة', 'success');
+    }
+
+    let pendingExamFile = null;
+
+    function openExamModal(id = null) {
+      pendingExamFile = null;
+      const exam = id ? exams.find(e => e.id === id) : null;
+      const deptOptions = departments.map(d => `<option value="${d.id}" ${exam && exam.deptId === d.id ? 'selected' : ''}>${escapeHtml(d.name)}</option>`).join('');
+      const subjectOptions = subjects.map(s => `<option value="${s.id}" data-dept="${s.deptId}" ${exam && exam.subjectId === s.id ? 'selected' : ''}>${escapeHtml(s.name)} (${escapeHtml(deptName(s.deptId))})</option>`).join('');
+
+      openModal(`
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4">${exam ? 'تعديل امتحان' : 'إضافة امتحان جديد'}</h3>
+        <form id="examForm" class="space-y-3">
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">عنوان الامتحان</label>
+            <input id="examTitle" type="text" required value="${escapeAttr(exam ? exam.title : '')}"
+              class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="مثال: امتحان نهائي - مقاومة المواد" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-slate-600 dark:text-slate-300">القسم</label>
+              <select id="examDept" required class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">${deptOptions}</select>
+            </div>
+            <div>
+              <label class="text-sm text-slate-600 dark:text-slate-300">المادة</label>
+              <select id="examSubject" required class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">${subjectOptions}</select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-slate-600 dark:text-slate-300">نوع الامتحان</label>
+              <select id="examType" class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="Midterm" ${exam && exam.type === 'Midterm' ? 'selected' : ''}>متوسط (Midterm)</option>
+                <option value="Final" ${exam && exam.type === 'Final' ? 'selected' : ''}>نهائي (Final)</option>
+                <option value="Quiz" ${exam && exam.type === 'Quiz' ? 'selected' : ''}>اختبار قصير (Quiz)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-slate-600 dark:text-slate-300">السنة</label>
+              <input id="examYear" type="text" value="${escapeAttr(exam ? exam.year : '2025')}"
+                class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="2025" />
+            </div>
+          </div>
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">الفصل / الفصل الدراسي</label>
+            <input id="examSemester" type="text" value="${escapeAttr(exam ? exam.semester : 'الفصل الأول')}"
+              class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">رابط PDF (اختياري)</label>
+            <input id="examUrl" type="url" value="${escapeAttr(exam && exam.pdfUrl && !exam.pdfUrl.startsWith('data:') ? exam.pdfUrl : '')}"
+              class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+          </div>
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">أو ارفع ملف PDF</label>
+            <input id="examFile" type="file" accept="application/pdf" class="w-full mt-1 text-sm" />
+            <p class="text-xs text-slate-400 mt-1">ملاحظة: الملفات الكبيرة قد لا تُحفظ (حد localStorage ≈5MB).</p>
+            ${exam && exam.pdfUrl && exam.pdfUrl.startsWith('data:') ? '<p class="text-xs text-emerald-500 mt-1">يوجد ملف مرفوع مسبقاً (اترك الحقل فارغاً للاحتفاظ به).</p>' : ''}
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm">إلغاء</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">${exam ? 'حفظ' : 'إضافة'}</button>
+          </div>
+        </form>`);
+
+      // filter subjects by dept
+      const deptSel = document.getElementById('examDept');
+      const subjSel = document.getElementById('examSubject');
+      function filterSubjects() {
+        const d = deptSel.value;
+        Array.from(subjSel.options).forEach(opt => {
+          const ok = !opt.dataset.dept || opt.dataset.dept === d;
+          opt.style.display = ok ? '' : 'none';
+        });
+        // select first visible
+        const firstVisible = Array.from(subjSel.options).find(o => o.style.display !== 'none');
+        if (firstVisible && subjSel.selectedOptions[0]?.style.display === 'none') subjSel.value = firstVisible.value;
+      }
+      deptSel.addEventListener('change', filterSubjects);
+      filterSubjects();
+
+      // map subject change -> dept
+      subjSel.addEventListener('change', () => {
+        const opt = subjSel.selectedOptions[0];
+        if (opt && opt.dataset.dept) deptSel.value = opt.dataset.dept;
+      });
+
+      document.getElementById('examFile').addEventListener('change', (ev) => {
+        const file = ev.target.files?.[0];
+        if (!file) { pendingExamFile = null; return; }
+        if (file.size > 4 * 1024 * 1024) { toast('الملف كبير جداً (حد 4MB)', 'warn'); ev.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => { pendingExamFile = e.target.result; toast('تم تحميل الملف', 'success'); };
+        reader.onerror = () => { pendingExamFile = null; toast('فشل قراءة الملف', 'error'); };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById('examForm').onsubmit = (ev) => {
+        ev.preventDefault();
+        const title = document.getElementById('examTitle').value.trim();
+        const deptId = document.getElementById('examDept').value;
+        const subjectId = document.getElementById('examSubject').value;
+        const type = document.getElementById('examType').value;
+        const year = document.getElementById('examYear').value.trim();
+        const semester = document.getElementById('examSemester').value.trim();
+        const url = document.getElementById('examUrl').value.trim();
+
+        let pdfUrl = url;
+        if (pendingExamFile) pdfUrl = pendingExamFile;
+        else if (!pdfUrl && exam && exam.pdfUrl) pdfUrl = exam.pdfUrl;
+        if (!pdfUrl) pdfUrl = DEMO_PDF;
+
+        if (!title || !deptId || !subjectId) { toast('أكمل الحقول المطلوبة', 'warn'); return; }
+
+        if (exam) {
+          exam.title = title; exam.deptId = deptId; exam.subjectId = subjectId;
+          exam.type = type; exam.year = year; exam.semester = semester; exam.pdfUrl = pdfUrl;
+          toast('تم تعديل الامتحان', 'success');
+        } else {
+          exams.push({ id: uid(), title, deptId, subjectId, type, year, semester, pdfUrl });
+          toast('تم إضافة الامتحان', 'success');
+        }
+        saveAll(); closeModal(); renderAdmin(); renderStudent();
+      };
+    }
+
+    function deleteExam(id) {
+      const e = exams.find(x => x.id === id);
+      if (!confirm(`حذف الامتحان "${e?.title}"؟`)) return;
+      exams = exams.filter(x => x.id !== id);
+      saveAll(); renderAdmin(); renderStudent(); toast('تم حذف الامتحان', 'success');
+    }
+
+    /* =====================================================
+       WIRING
+       ===================================================== */
+    // theme
+    document.getElementById('themeToggle').onclick = () => {
+      const dark = document.documentElement.classList.contains('dark');
+      localStorage.setItem(STORAGE_KEYS.theme, dark ? 'light' : 'dark');
+      applyTheme();
+    };
+    // admin link (discreet) - in header cog + footer
+    function openAdminLogin() {
+      if (isLoggedIn()) { showAdminView(); return; }
+      openModal(`
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4"><i class="fas fa-lock ml-2"></i> تسجيل دخول الإدارة</h3>
+        <form id="loginForm" class="space-y-3">
+          <div>
+            <label class="text-sm text-slate-600 dark:text-slate-300">كلمة المرور</label>
+            <input id="loginEmail" type="email" required class="w-full mb-2 px-3 py-2 rounded-lg border border-slate-300" placeholder="admin@example.com" /><input id="loginPwd" type="password" required class="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="admin123" />
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm">إلغاء</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">دخول</button>
+          </div>
+        </form>
+        <p class="text-xs text-slate-400 mt-3">كلمة المرور الافتراضية: admin123</p>`);
+      document.getElementById('loginForm').onsubmit = async (ev) => {
+        ev.preventDefault();
+        const email = (document.getElementById('loginEmail')||{}).value || ((__cfg&&__cfg.adminEmail)||'admin@example.com'); const pw = document.getElementById('loginPwd').value;
+        const ok = await login(email,pw); if (ok) {
+          closeModal(); showAdminView(); toast('تم تسجيل الدخول', 'success');
+        } else {
+          toast('كلمة المرور غير صحيحة', 'error');
+        }
+      };
+    }
+    // فتح لوحة التحكم تلقائياً عند الدخول عبر admin.html
+    if (new URLSearchParams(location.search).get('admin') === '1') {
+      openAdminLogin();
+    }
+
+    function showAdminView() {
+      document.getElementById('studentView').classList.add('hidden');
+      document.getElementById('adminView').classList.remove('hidden');
+      currentTab = 'depts';
+      document.querySelectorAll('.tabBtn').forEach(b => {
+        b.classList.toggle('nav-active', b.dataset.tab === currentTab);
+        b.classList.toggle('bg-slate-100', false);
+      });
+      renderAdmin();
+      window.scrollTo(0, 0);
+    }
+    function showStudentView() {
+      document.getElementById('adminView').classList.add('hidden');
+      document.getElementById('studentView').classList.remove('hidden');
+    }
+
+    document.getElementById('adminBack').onclick = showStudentView;
+    document.getElementById('adminLogout').onclick = () => {
+      logout(); showStudentView(); toast('تم تسجيل الخروج', 'info');
+    };
+
+    // tabs
+    document.querySelectorAll('.tabBtn').forEach(btn => {
+      btn.onclick = () => {
+        currentTab = btn.dataset.tab;
+        document.querySelectorAll('.tabBtn').forEach(b => b.classList.toggle('nav-active', b.dataset.tab === currentTab));
+        renderAdmin();
+      };
+    });
+
+    // search
+    document.getElementById('searchInput').addEventListener('input', renderStudent);
+
+    // pdf modal
+    document.getElementById('pdfClose').onclick = closePdf;
+    document.getElementById('modalClose').onclick = closeModal;
+    document.getElementById('modalOverlay').addEventListener('click', (ev) => { if (ev.target.id === 'modalOverlay') closeModal(); });
+    document.getElementById('pdfModal').addEventListener('click', (ev) => { if (ev.target.id === 'pdfModal') closePdf(); });
+
+    // escape key
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape') { closeModal(); closePdf(); }
+    });
+
+    window.__adminInit = (async () => {
+      await new Promise((resolve) => {
+        const check = () => {
+          if (typeof departments !== 'undefined' && typeof subjects !== 'undefined' && typeof exams !== 'undefined') { resolve(); }
+          else { setTimeout(check, 50); }
+        };
+        check();
+      });
+      renderStudent();
+      if (!isLoggedIn()) { openAdminLogin(); } else { showAdminView(); }
+    })();
+    // sync password default storage (not needed)
+  </script>
+</body>
+</html>
